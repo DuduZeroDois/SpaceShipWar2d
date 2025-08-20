@@ -15,7 +15,7 @@ let xpL = 100
 let gmL = false
 
 //objetos
-const nave = {x:400,y:560,w:40,h:20,speed:7}
+const nave = {x:400,y:560,w:40,h:20,speed:8}
 const tecla = {}
 
 //arrys
@@ -28,8 +28,51 @@ const inimigos = []
 function CreateEnemie () {
     inimigos.length = 0
     for (let i = 0; i < 7; i++) {
-        inimigos.push({x:100 + i * 90,y:50,w:40,h:20,speed:1 +Math.random() *1})
+        inimigos.push({x:100 + i * 90,y:50,w:40,h:20,speed:3 +Math.random() *1})
     }
     
 }
 CreateEnemie()
+
+//escutador de teclas
+document.addEventListener("keydown", e =>{
+    tecla[e.key] = true
+    if (e.key === " ") {
+        bala.push({x: nave.x + nave.w /2 -2, y: nave.y, w:4, h: 10})
+    }
+})
+document.addEventListener("keyup", e=> tecla[e.key] = false)
+
+//game loop
+function GameLoop() {
+    ctx.clearRect(0, 0, canva.width, canva.height)
+    if (tecla["a"]) nave.x -= nave.speed
+    if (tecla["d"]) nave.x += nave.speed
+    nave.x = Math.max(0, Math.min(canva.width - nave.w, nave.x))
+    //desenhando nave
+    ctx.fillStyle = "lime"
+    ctx.fillRect(nave.x, nave.y, nave.w, nave.h)
+    //desenhando bala
+    ctx.fillStyle = "yellow"
+    for (let i = bala.length -1; i >= 0; i--) {
+        const b = bala[i]
+        b.y -= 8
+        ctx.fillRect(b.x, b.y, b.w, b.h)
+        if (b.y < 0) bala.splice(i,1)
+    }
+    //Desenhar inimigos
+    ctx.fillStyle = "red"
+    for (let i = inimigos.length -1; i >= 0; i--) {
+        const c = inimigos[i]
+        c.y += c.speed
+        ctx.fillRect(c.x, c.y, c.w, c.h)
+        if (c.y > canva.height) {
+            xpL -= 10
+            xp.textContent = xpL
+            c.y = -20
+            c.x = Math.random() *(canva.width - c.w)
+        }
+        // soon
+    }
+}
+requestAnimationFrame(GameLoop)
