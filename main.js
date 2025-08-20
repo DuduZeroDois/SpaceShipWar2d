@@ -15,7 +15,7 @@ let xpL = 100
 let gmL = false
 
 //objetos
-const nave = {x:400,y:560,w:40,h:20,speed:8}
+const nave = {x:400,y:560,w:40,h:20,speed:6}
 const tecla = {}
 
 //arrys
@@ -28,7 +28,7 @@ const inimigos = []
 function CreateEnemie () {
     inimigos.length = 0
     for (let i = 0; i < 7; i++) {
-        inimigos.push({x:100 + i * 90,y:50,w:40,h:20,speed:3 +Math.random() *1})
+        inimigos.push({x:100 + i * 90,y:50,w:40,h:20,speed:1 +Math.random() *1})
     }
     
 }
@@ -42,9 +42,33 @@ document.addEventListener("keydown", e =>{
     }
 })
 document.addEventListener("keyup", e=> tecla[e.key] = false)
-
+//game over
+function cgo() {
+    for (let element of inimigos) {
+        if (element.y + element.h >= nave.y && element.x < nave.x + nave.w && element.x + element.w > nave.x) {
+            return true
+        }
+    }
+    return xpL <= 0
+}
+//reniciar
+function Reset() {
+    pontosL = 0
+    xpL = 100
+    gmL = false
+    bala.length = 0
+    CreateEnemie()
+    nave.x = 400
+    nave.y = 560
+    xp.textContent = xpL
+    pontos.textContent = pontosL
+    gm.style.display = "none"
+    wn.style.display = "none"
+    requestAnimationFrame(GameLoop)
+}
 //game loop
 function GameLoop() {
+    if(gmL == true)return
     ctx.clearRect(0, 0, canva.width, canva.height)
     if (tecla["a"]) nave.x -= nave.speed
     if (tecla["d"]) nave.x += nave.speed
@@ -72,7 +96,30 @@ function GameLoop() {
             c.y = -20
             c.x = Math.random() *(canva.width - c.w)
         }
-        // soon
+        for (let i2 = bala.length - 1; i2 >= 0; i2--) { //verificar colisão com as balas
+            const b2 = bala[i2]
+            if (b2.x < c.x + c.w && b2.x + b2.w > c.x && b2.y < c.y + c.h && b2.y + b2.h > c.y) {
+                inimigos.splice(i, 1)
+                bala.splice(i2,1)
+                pontosL++
+                pontos.textContent = pontosL
+                break
+            }
+        }
     }
+    //Check game over
+    if (cgo()) {
+        gmL = true
+        gm.style.display = "flex"
+        return
+    }
+    //Check winner
+    if (inimigos.length === 0) {
+        wn.style.display = "flex"
+        gmL = true
+        return        
+    }
+    requestAnimationFrame(GameLoop)
 }
+reset.onclick = Reset
 requestAnimationFrame(GameLoop)
